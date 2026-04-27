@@ -1,0 +1,989 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🍳 Smart Pantry Chef</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      :root {
+        --green-dark: #4a148c;
+        --green-mid: #7b1fa2;
+        --green-light: #9c27b0;
+        --green-pale: #f3e5f5;
+        --green-faint: #fce4ec;
+        --accent: #ce93d8;
+        --warn: #ff8f00;
+        --risk: #e64a19;
+        --expired: #c62828;
+        --surface: #ffffff;
+        --bg: #f9f4fc;
+        --border: #e8d5f0;
+        --text: #1a0a1e;
+        --text-muted: #7b6b80;
+        --radius: 14px;
+        --shadow: 0 4px 24px rgba(123, 31, 162, 0.07);
+        --shadow-hover: 0 8px 32px rgba(123, 31, 162, 0.13);
+      }
+      body {
+        font-family: "Inter", "Segoe UI", sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+      }
+
+      /* ── Header ── */
+      header {
+        background: linear-gradient(
+          135deg,
+          #1b5e20 0%,
+          #2e7d32 50%,
+          #388e3c 100%
+        );
+        color: white;
+        padding: 0 40px;
+        height: 68px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 2px 20px rgba(0, 0, 0, 0.2);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+      .header-left {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+      .header-logo {
+        width: 42px;
+        height: 42px;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        backdrop-filter: blur(4px);
+      }
+      .header-title h1 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        letter-spacing: -0.3px;
+      }
+      .header-title p {
+        font-size: 0.75rem;
+        opacity: 0.75;
+        margin-top: 1px;
+      }
+      .header-badge {
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        border-radius: 20px;
+        padding: 5px 14px;
+        font-size: 0.78rem;
+        font-weight: 500;
+        backdrop-filter: blur(4px);
+      }
+
+      /* ── Layout ── */
+      .container {
+        display: grid;
+        grid-template-columns: 1fr 1.65fr;
+        grid-template-rows: auto auto;
+        gap: 20px;
+        padding: 24px 32px 32px;
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+
+      /* ── Cards ── */
+      .card {
+        background: var(--surface);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 22px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        border: 1px solid var(--border);
+        transition: box-shadow 0.2s;
+      }
+      .card:hover {
+        box-shadow: var(--shadow-hover);
+      }
+
+      .card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-bottom: 14px;
+        border-bottom: 1.5px solid var(--green-pale);
+      }
+      .card-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--green-mid);
+      }
+      .card-icon {
+        width: 34px;
+        height: 34px;
+        background: var(--green-pale);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+      }
+
+      /* ── Pantry ── */
+      #pantry-section {
+        grid-row: 1 / 3;
+        height: 100%;
+      }
+
+      .pantry-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+      .pantry-stats {
+        display: flex;
+        gap: 8px;
+      }
+      .stat-pill {
+        background: var(--green-faint);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 4px 12px;
+        font-size: 0.76rem;
+        font-weight: 600;
+        color: var(--green-mid);
+      }
+      .stat-pill.warn {
+        background: #fff8e1;
+        border-color: #ffe082;
+        color: var(--warn);
+      }
+      .stat-pill.risk {
+        background: #fbe9e7;
+        border-color: #ffab91;
+        color: var(--risk);
+      }
+
+      .btn {
+        border: none;
+        border-radius: 8px;
+        padding: 8px 16px;
+        font-size: 0.83rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .btn-ghost {
+        background: var(--green-pale);
+        color: var(--green-mid);
+      }
+      .btn-ghost:hover {
+        background: #c8e6c9;
+        transform: translateY(-1px);
+      }
+      .btn-primary {
+        background: var(--green-mid);
+        color: white;
+      }
+      .btn-primary:hover {
+        background: var(--green-dark);
+        transform: translateY(-1px);
+      }
+      .btn-primary:disabled {
+        background: #a5d6a7;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      #pantry-table-wrapper {
+        overflow-y: auto;
+        max-height: 560px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+      }
+      #pantry-table-wrapper::-webkit-scrollbar {
+        width: 6px;
+      }
+      #pantry-table-wrapper::-webkit-scrollbar-track {
+        background: #f5f5f5;
+      }
+      #pantry-table-wrapper::-webkit-scrollbar-thumb {
+        background: #c8e6c9;
+        border-radius: 3px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.855rem;
+      }
+      thead th {
+        background: var(--green-pale);
+        color: var(--green-dark);
+        text-align: left;
+        padding: 10px 12px;
+        position: sticky;
+        top: 0;
+        font-weight: 600;
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        z-index: 1;
+      }
+      tbody tr {
+        border-bottom: 1px solid #f0f0f0;
+        transition: background 0.15s;
+      }
+      tbody tr:last-child {
+        border-bottom: none;
+      }
+      tbody tr:hover {
+        background: var(--green-faint);
+      }
+      td {
+        padding: 10px 12px;
+        vertical-align: middle;
+      }
+      td:first-child {
+        font-weight: 600;
+      }
+
+      .category-tag {
+        display: inline-block;
+        background: #f3f4f6;
+        color: #555;
+        border-radius: 6px;
+        padding: 2px 8px;
+        font-size: 0.74rem;
+        font-weight: 500;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 0.73rem;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+      .badge::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+      }
+      .badge-ok {
+        background: #e8f5e9;
+        color: #2e7d32;
+      }
+      .badge-ok::before {
+        background: #66bb6a;
+      }
+      .badge-warn {
+        background: #fff8e1;
+        color: #f57f17;
+      }
+      .badge-warn::before {
+        background: #ffa726;
+      }
+      .badge-risk {
+        background: #fbe9e7;
+        color: #e64a19;
+      }
+      .badge-risk::before {
+        background: #ff7043;
+      }
+      .badge-expired {
+        background: #ffebee;
+        color: #c62828;
+      }
+      .badge-expired::before {
+        background: #ef5350;
+      }
+      .badge-nodate {
+        background: #f5f5f5;
+        color: #9e9e9e;
+      }
+      .badge-nodate::before {
+        background: #bdbdbd;
+      }
+
+      #pantry-status {
+        font-size: 0.78rem;
+        color: var(--text-muted);
+      }
+
+      /* ── Chat ── */
+      .quick-prompts {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+      }
+      .quick-prompts button {
+        background: var(--green-faint);
+        border: 1px solid #c8e6c9;
+        color: var(--green-mid);
+        border-radius: 20px;
+        padding: 5px 13px;
+        font-size: 0.77rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-family: inherit;
+      }
+      .quick-prompts button:hover {
+        background: #c8e6c9;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(46, 125, 50, 0.15);
+      }
+
+      #chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        max-height: 320px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding: 4px 2px;
+        scroll-behavior: smooth;
+      }
+      #chat-messages::-webkit-scrollbar {
+        width: 4px;
+      }
+      #chat-messages::-webkit-scrollbar-thumb {
+        background: #c8e6c9;
+        border-radius: 2px;
+      }
+
+      .message {
+        padding: 11px 15px;
+        border-radius: 12px;
+        max-width: 88%;
+        line-height: 1.55;
+        font-size: 0.875rem;
+        white-space: pre-wrap;
+        animation: fadeIn 0.2s ease;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .message.user {
+        background: linear-gradient(135deg, #2e7d32, #43a047);
+        color: white;
+        align-self: flex-end;
+        border-bottom-right-radius: 3px;
+        box-shadow: 0 2px 10px rgba(46, 125, 50, 0.25);
+      }
+      .message.bot {
+        background: var(--green-faint);
+        color: var(--text);
+        align-self: flex-start;
+        border-bottom-left-radius: 3px;
+        border: 1px solid #dcedc8;
+      }
+      .message.loading {
+        background: #fafafa;
+        color: #aaa;
+        border: 1px dashed #ddd;
+        align-self: flex-start;
+        font-style: italic;
+        font-size: 0.83rem;
+      }
+
+      #chat-form {
+        display: flex;
+        gap: 8px;
+        background: var(--green-faint);
+        border: 1.5px solid #c8e6c9;
+        border-radius: 10px;
+        padding: 6px 6px 6px 14px;
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s;
+      }
+      #chat-form:focus-within {
+        border-color: var(--green-mid);
+        box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
+      }
+      #chat-input {
+        flex: 1;
+        border: none;
+        background: transparent;
+        font-size: 0.88rem;
+        font-family: inherit;
+        color: var(--text);
+        outline: none;
+      }
+      #chat-input::placeholder {
+        color: #aaa;
+      }
+      #chat-send {
+        background: var(--green-mid);
+        color: white;
+        border: none;
+        border-radius: 7px;
+        padding: 8px 16px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+        font-family: inherit;
+      }
+      #chat-send:hover {
+        background: var(--green-dark);
+      }
+      #chat-send:disabled {
+        background: #a5d6a7;
+        cursor: not-allowed;
+      }
+
+      /* ── OCR ── */
+      #ocr-drop-zone {
+        border: 2px dashed #a5d6a7;
+        border-radius: 12px;
+        padding: 32px 20px;
+        text-align: center;
+        cursor: pointer;
+        color: var(--text-muted);
+        font-size: 0.875rem;
+        line-height: 1.7;
+        transition: all 0.2s;
+        background: var(--green-faint);
+      }
+      #ocr-drop-zone:hover,
+      #ocr-drop-zone.drag-over {
+        background: #e8f5e9;
+        border-color: var(--green-mid);
+        color: var(--green-mid);
+        transform: scale(1.01);
+      }
+      .drop-icon {
+        font-size: 2.6rem;
+        display: block;
+        margin-bottom: 8px;
+        filter: grayscale(0.2);
+      }
+      #ocr-file {
+        display: none;
+      }
+
+      #ocr-preview-wrapper {
+        display: none;
+        position: relative;
+        border-radius: 10px;
+        overflow: hidden;
+      }
+      #ocr-preview {
+        width: 100%;
+        max-height: 190px;
+        object-fit: cover;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        display: block;
+      }
+      #ocr-clear {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: rgba(0, 0, 0, 0.6);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 28px;
+        height: 28px;
+        cursor: pointer;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s;
+        backdrop-filter: blur(4px);
+      }
+      #ocr-clear:hover {
+        background: rgba(0, 0, 0, 0.8);
+      }
+
+      #ocr-submit {
+        width: 100%;
+        background: linear-gradient(135deg, #2e7d32, #43a047);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        padding: 11px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-family: inherit;
+        letter-spacing: 0.2px;
+      }
+      #ocr-submit:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 16px rgba(46, 125, 50, 0.3);
+      }
+      #ocr-submit:disabled {
+        background: #a5d6a7;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+      }
+
+      #ocr-result {
+        font-size: 0.84rem;
+        background: var(--green-faint);
+        border: 1px solid #dcedc8;
+        border-radius: 10px;
+        padding: 14px;
+        white-space: pre-wrap;
+        display: none;
+        max-height: 170px;
+        overflow-y: auto;
+        line-height: 1.6;
+        animation: fadeIn 0.3s ease;
+      }
+      #ocr-result.error {
+        background: #fff3f3;
+        border-color: #ffcdd2;
+        color: var(--expired);
+      }
+
+      /* ── Empty / Loading states ── */
+      .empty-state {
+        text-align: center;
+        color: var(--text-muted);
+        padding: 40px 20px;
+        font-size: 0.875rem;
+      }
+      .empty-state .empty-icon {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+        display: block;
+        opacity: 0.5;
+      }
+
+      /* ── Responsive ── */
+      @media (max-width: 860px) {
+        .container {
+          grid-template-columns: 1fr;
+          padding: 16px;
+        }
+        #pantry-section {
+          grid-row: auto;
+        }
+        header {
+          padding: 0 20px;
+        }
+        .header-badge {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ══ HEADER ══ -->
+    <header>
+      <div class="header-left">
+        <div class="header-logo">🍳</div>
+        <div class="header-title">
+          <h1>Smart Pantry Chef</h1>
+          <p>Zero-waste AI kitchen assistant</p>
+        </div>
+      </div>
+      <div class="header-badge">✦ Powered by GPT-4o mini</div>
+    </header>
+
+    <div class="container">
+      <!-- ══ LEFT: Pantry Inventory ══ -->
+      <section class="card" id="pantry-section">
+        <div class="card-header">
+          <div class="card-title">
+            <div class="card-icon">🥦</div>
+            Pantry Inventory
+          </div>
+          <button class="btn btn-ghost" onclick="loadPantry()">
+            ⟳ Refresh
+          </button>
+        </div>
+
+        <div class="pantry-toolbar">
+          <span id="pantry-status">Loading…</span>
+          <div class="pantry-stats" id="pantry-stats"></div>
+        </div>
+
+        <div id="pantry-table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Qty</th>
+                <th>Unit</th>
+                <th>Expiry</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="pantry-tbody">
+              <tr>
+                <td colspan="6">
+                  <div class="empty-state">
+                    <span class="empty-icon">🌿</span>
+                    Loading your pantry…
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ══ TOP RIGHT: Chat ══ -->
+      <section class="card" id="chat-section">
+        <div class="card-header">
+          <div class="card-title">
+            <div class="card-icon">💬</div>
+            Chat with Smart Chef
+          </div>
+        </div>
+
+        <div class="quick-prompts">
+          <button onclick="quickPrompt('What can I cook with my pantry?')">
+            🍽 Recipe ideas
+          </button>
+          <button onclick="quickPrompt('What items are expiring soon?')">
+            ⚠️ Expiring soon
+          </button>
+          <button
+            onclick="
+              quickPrompt('Show me a zero-waste meal using at-risk items.')
+            "
+          >
+            ♻️ Zero-waste meal
+          </button>
+          <button
+            onclick="quickPrompt('Remove all expired items from my pantry.')"
+          >
+            🗑 Clear expired
+          </button>
+        </div>
+
+        <div id="chat-messages">
+          <div class="message bot">
+            👋 Hi! I'm your Smart Pantry Chef. Ask me for recipe ideas, to
+            add/remove items, or check what's expiring soon.
+          </div>
+        </div>
+
+        <form id="chat-form" onsubmit="sendChat(event)">
+          <input
+            id="chat-input"
+            type="text"
+            placeholder="e.g. What can I make with eggs and spinach?"
+            autocomplete="off"
+          />
+          <button id="chat-send" type="submit">Send ➤</button>
+        </form>
+      </section>
+
+      <!-- ══ BOTTOM RIGHT: OCR Upload ══ -->
+      <section class="card" id="ocr-section">
+        <div class="card-header">
+          <div class="card-title">
+            <div class="card-icon">📷</div>
+            Scan Receipt / Label
+          </div>
+        </div>
+
+        <p
+          style="font-size: 0.82rem; color: var(--text-muted); margin-top: -6px"
+        >
+          Upload a grocery receipt or food label — items will be added to your
+          pantry automatically with estimated expiry dates.
+        </p>
+
+        <div
+          id="ocr-drop-zone"
+          onclick="document.getElementById('ocr-file').click()"
+          ondragover="handleDragOver(event)"
+          ondrop="handleDrop(event)"
+          ondragleave="this.classList.remove('drag-over')"
+        >
+          <span class="drop-icon">📂</span>
+          <strong>Click to browse</strong> or drag &amp; drop<br />
+          <small style="opacity: 0.7">JPG · PNG · WEBP</small>
+        </div>
+        <input
+          type="file"
+          id="ocr-file"
+          accept="image/*"
+          onchange="previewFile(event)"
+        />
+
+        <div id="ocr-preview-wrapper">
+          <img id="ocr-preview" src="" alt="Preview" />
+          <button id="ocr-clear" onclick="clearOCR()" title="Remove">✕</button>
+        </div>
+
+        <button id="ocr-submit" onclick="submitOCR()" disabled>
+          📤 Scan &amp; Add to Pantry
+        </button>
+
+        <div id="ocr-result"></div>
+      </section>
+    </div>
+
+    <script>
+      // ══════════════════════════════════════
+      //  PANTRY
+      // ══════════════════════════════════════
+      async function loadPantry() {
+        const status = document.getElementById("pantry-status");
+        const tbody = document.getElementById("pantry-tbody");
+        const stats = document.getElementById("pantry-stats");
+        status.textContent = "Refreshing…";
+
+        try {
+          const res = await fetch("/pantry");
+          const data = await res.json();
+          if (data.error) throw new Error(data.error);
+          const items = data.items;
+
+          // stats pills
+          const expiredCount = items.filter(
+            (i) => i.days_until_expiry !== null && i.days_until_expiry < 0,
+          ).length;
+          const atRiskCount = items.filter(
+            (i) =>
+              i.days_until_expiry !== null &&
+              i.days_until_expiry >= 0 &&
+              i.days_until_expiry <= 3,
+          ).length;
+          stats.innerHTML = `
+        <span class="stat-pill">${items.length} items</span>
+        ${atRiskCount ? `<span class="stat-pill warn">⚠ ${atRiskCount} at risk</span>` : ""}
+        ${expiredCount ? `<span class="stat-pill risk">✕ ${expiredCount} expired</span>` : ""}
+      `;
+          status.textContent = "Updated just now";
+
+          if (!items.length) {
+            tbody.innerHTML = `<tr><td colspan="6">
+          <div class="empty-state">
+            <span class="empty-icon">🛒</span>
+            Your pantry is empty. Add items via chat or scan a receipt.
+          </div>
+        </td></tr>`;
+            return;
+          }
+
+          tbody.innerHTML = items
+            .map((item) => {
+              const d = item.days_until_expiry;
+              let badge;
+              if (d === null || d === undefined)
+                badge = '<span class="badge badge-nodate">No date</span>';
+              else if (d < 0)
+                badge = `<span class="badge badge-expired">Expired ${Math.abs(d)}d ago</span>`;
+              else if (d === 0)
+                badge = '<span class="badge badge-risk">Today</span>';
+              else if (d <= 1)
+                badge = `<span class="badge badge-risk">${d}d left</span>`;
+              else if (d <= 3)
+                badge = `<span class="badge badge-warn">${d}d left</span>`;
+              else badge = `<span class="badge badge-ok">${d}d left</span>`;
+
+              return `<tr>
+          <td>${esc(item.name)}</td>
+          <td><span class="category-tag">${esc(item.category || "—")}</span></td>
+          <td>${item.quantity}</td>
+          <td style="color:var(--text-muted)">${esc(item.unit || "—")}</td>
+          <td style="font-size:0.82rem;color:var(--text-muted)">${item.expiry_date || "—"}</td>
+          <td>${badge}</td>
+        </tr>`;
+            })
+            .join("");
+        } catch (e) {
+          status.textContent = "Error.";
+          tbody.innerHTML = `<tr><td colspan="6">
+        <div class="empty-state" style="color:var(--expired)">
+          <span class="empty-icon">⚠️</span>
+          Failed to load: ${esc(e.message)}
+        </div>
+      </td></tr>`;
+        }
+      }
+
+      // ══════════════════════════════════════
+      //  CHAT
+      // ══════════════════════════════════════
+      function appendMessage(role, text) {
+        const box = document.getElementById("chat-messages");
+        const div = document.createElement("div");
+        div.className = `message ${role}`;
+        div.textContent = text;
+        box.appendChild(div);
+        box.scrollTop = box.scrollHeight;
+        return div;
+      }
+
+      async function sendChat(e) {
+        e.preventDefault();
+        const input = document.getElementById("chat-input");
+        const btn = document.getElementById("chat-send");
+        const text = input.value.trim();
+        if (!text) return;
+
+        appendMessage("user", text);
+        input.value = "";
+        btn.disabled = true;
+
+        const loader = appendMessage("loading", "⏳ Chef is thinking…");
+        try {
+          const res = await fetch("/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: text }),
+          });
+          const data = await res.json();
+          loader.remove();
+          appendMessage("bot", data.reply || "No response received.");
+          loadPantry();
+        } catch (err) {
+          loader.remove();
+          appendMessage("bot", "⚠️ Network error. Is the server running?");
+        } finally {
+          btn.disabled = false;
+          input.focus();
+        }
+      }
+
+      function quickPrompt(text) {
+        document.getElementById("chat-input").value = text;
+        document.getElementById("chat-input").focus();
+      }
+
+      // ══════════════════════════════════════
+      //  OCR
+      // ══════════════════════════════════════
+      let ocrFile = null;
+
+      function previewFile(e) {
+        const file = e.target.files[0];
+        if (file) setOCRFile(file);
+      }
+
+      function setOCRFile(file) {
+        ocrFile = file;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          document.getElementById("ocr-preview").src = e.target.result;
+          document.getElementById("ocr-preview-wrapper").style.display =
+            "block";
+          document.getElementById("ocr-drop-zone").style.display = "none";
+          document.getElementById("ocr-submit").disabled = false;
+          document.getElementById("ocr-result").style.display = "none";
+        };
+        reader.readAsDataURL(file);
+      }
+
+      function clearOCR() {
+        ocrFile = null;
+        document.getElementById("ocr-file").value = "";
+        document.getElementById("ocr-preview").src = "";
+        document.getElementById("ocr-preview-wrapper").style.display = "none";
+        document.getElementById("ocr-drop-zone").style.display = "block";
+        document.getElementById("ocr-submit").disabled = true;
+        document.getElementById("ocr-result").style.display = "none";
+      }
+
+      function handleDragOver(e) {
+        e.preventDefault();
+        document.getElementById("ocr-drop-zone").classList.add("drag-over");
+      }
+      function handleDrop(e) {
+        e.preventDefault();
+        document.getElementById("ocr-drop-zone").classList.remove("drag-over");
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith("image/")) setOCRFile(file);
+      }
+
+      async function submitOCR() {
+        if (!ocrFile) return;
+        const btn = document.getElementById("ocr-submit");
+        const result = document.getElementById("ocr-result");
+        btn.disabled = true;
+        btn.textContent = "⏳ Scanning…";
+        result.style.display = "none";
+        result.className = "";
+
+        try {
+          const form = new FormData();
+          form.append("image", ocrFile);
+          const res = await fetch("/ocr", { method: "POST", body: form });
+          const data = await res.json();
+          result.style.display = "block";
+          if (data.error) {
+            result.className = "error";
+            result.textContent = "❌ " + data.error;
+          } else {
+            result.textContent = data.reply || "Done.";
+            loadPantry();
+          }
+        } catch (err) {
+          result.style.display = "block";
+          result.className = "error";
+          result.textContent = "⚠️ Network error. Is the server running?";
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "📤 Scan & Add to Pantry";
+        }
+      }
+
+      // ══════════════════════════════════════
+      //  UTILS
+      // ══════════════════════════════════════
+      function esc(s) {
+        return String(s)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      loadPantry();
+    </script>
+  </body>
+</html>

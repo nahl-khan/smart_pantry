@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Smart Pantry Chef</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <link rel="preconnect" href="https://api.fontshare.com" />
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --font-body: 'Satoshi', Inter, sans-serif;
+
+      --text-xs: 0.75rem;
+      --text-sm: 0.875rem;
+      --text-base: 1rem;
+      --text-lg: 1.125rem;
+      --text-xl: 1.5rem;
+
+      --space-1: 0.25rem;
+      --space-2: 0.5rem;
+      --space-3: 0.75rem;
+      --space-4: 1rem;
+      --space-5: 1.25rem;
+      --space-6: 1.5rem;
+      --space-8: 2rem;
+      --space-10: 2.5rem;
+
+      --radius-sm: 0.375rem;
+      --radius-md: 0.75rem;
+      --radius-lg: 1rem;
+      --radius-xl: 1.25rem;
+      --radius-full: 999px;
+
+      --bg: #07111f;
+      --bg-2: #0b1728;
+      --surface: rgba(11, 23, 40, 0.92);
+      --surface-2: rgba(16, 30, 52, 0.95);
+      --surface-3: rgba(21, 38, 63, 0.96);
+
+      --text: #ecf3ff;
+      --muted: #9bb0d3;
+      --faint: #6f85a9;
+
+      --border: rgba(151, 177, 221, 0.18);
+      --border-strong: rgba(151, 177, 221, 0.34);
+
+      --primary: #63e6be;
+      --primary-strong: #37d39a;
+      --primary-soft: rgba(99, 230, 190, 0.14);
+
+      --blue: #78a9ff;
+      --blue-soft: rgba(120, 169, 255, 0.16);
+
+      --danger: #ff8c8c;
+      --danger-soft: rgba(255, 140, 140, 0.16);
+
+      --shadow-lg: 0 24px 64px rgba(0, 0, 0, 0.42);
+      --shadow-md: 0 12px 28px rgba(0, 0, 0, 0.24);
+
+      --transition: 180ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      min-height: 100%;
+    }
+
+    body {
+      font-family: var(--font-body);
+      font-size: var(--text-base);
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(70, 122, 255, 0.18), transparent 35%),
+        radial-gradient(circle at bottom right, rgba(99, 230, 190, 0.14), transparent 35%),
+        linear-gradient(160deg, #040b14 0%, #07111f 48%, #081425 100%);
+      padding: var(--space-6);
+      line-height: 1.5;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    .app-shell {
+      width: 100%;
+      max-width: 1180px;
+      margin: 0 auto;
+      background: linear-gradient(180deg, rgba(10, 21, 38, 0.92), rgba(8, 16, 29, 0.95));
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+      backdrop-filter: blur(16px);
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-4);
+      padding: var(--space-5) var(--space-6);
+      border-bottom: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
+    .brand-mark {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, var(--primary-soft), var(--blue-soft));
+      border: 1px solid var(--border);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    .brand-copy h1 {
+      font-size: var(--text-lg);
+      font-weight: 700;
+      letter-spacing: 0.01em;
+    }
+
+    .brand-copy p {
+      font-size: var(--text-sm);
+      color: var(--muted);
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: 0.55rem 0.9rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-full);
+      color: var(--muted);
+      background: rgba(255,255,255,0.03);
+      font-size: var(--text-sm);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--primary);
+      box-shadow: 0 0 12px rgba(99, 230, 190, 0.75);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.6fr) minmax(320px, 420px);
+      gap: var(--space-4);
+      padding: var(--space-4);
+    }
+
+    .panel {
+      background: linear-gradient(180deg, rgba(14, 25, 43, 0.92), rgba(10, 19, 34, 0.98));
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      box-shadow: var(--shadow-md);
+      min-width: 0;
+    }
+
+    .panel-inner {
+      padding: var(--space-5);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+      height: 100%;
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: var(--space-3);
+    }
+
+    .eyebrow {
+      font-size: var(--text-xs);
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--faint);
+      font-weight: 700;
+    }
+
+    .panel-title {
+      font-size: var(--text-lg);
+      font-weight: 700;
+      margin-top: var(--space-1);
+    }
+
+    .panel-subtitle {
+      font-size: var(--text-sm);
+      color: var(--muted);
+      margin-top: var(--space-1);
+    }
+
+    .counter {
+      font-size: var(--text-xs);
+      color: var(--muted);
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      padding: 0.5rem 0.75rem;
+      border-radius: var(--radius-full);
+      white-space: nowrap;
+    }
+
+    #chat-box {
+      min-height: 420px;
+      max-height: 520px;
+      overflow: auto;
+      border-radius: 18px;
+      background: rgba(5, 11, 20, 0.5);
+      border: 1px solid rgba(151, 177, 221, 0.12);
+      padding: var(--space-4);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+
+    .message {
+      display: flex;
+      gap: var(--space-3);
+      align-items: flex-start;
+    }
+
+    .message-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      flex: 0 0 34px;
+      display: grid;
+      place-items: center;
+      font-size: var(--text-sm);
+      font-weight: 700;
+      border: 1px solid var(--border);
+    }
+
+    .message.user .message-avatar {
+      background: var(--blue-soft);
+      color: var(--blue);
+    }
+
+    .message.assistant .message-avatar {
+      background: var(--primary-soft);
+      color: var(--primary);
+    }
+
+    .message-body {
+      max-width: min(85%, 700px);
+    }
+
+    .message-label {
+      font-size: var(--text-xs);
+      color: var(--faint);
+      margin-bottom: var(--space-1);
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .bubble {
+      padding: 0.9rem 1rem;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.035);
+      color: var(--text);
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    .message.user .bubble {
+      background: rgba(120, 169, 255, 0.12);
+      border-color: rgba(120, 169, 255, 0.22);
+    }
+
+    .message.assistant .bubble {
+      background: rgba(99, 230, 190, 0.08);
+      border-color: rgba(99, 230, 190, 0.18);
+    }
+
+    .message.pending .bubble {
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    .typing-dots {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+
+    .typing-dots span {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--primary);
+      opacity: 0.45;
+      animation: bounce 1s infinite ease-in-out;
+    }
+
+    .typing-dots span:nth-child(2) { animation-delay: 0.15s; }
+    .typing-dots span:nth-child(3) { animation-delay: 0.3s; }
+
+    @keyframes bounce {
+      0%, 80%, 100% { transform: translateY(0); opacity: 0.3; }
+      40% { transform: translateY(-3px); opacity: 1; }
+    }
+
+    .chat-input-row {
+      display: flex;
+      gap: var(--space-3);
+      align-items: center;
+    }
+
+    #user-input {
+      flex: 1;
+      min-width: 0;
+      min-height: 48px;
+      padding: 0.9rem 1rem;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+      color: var(--text);
+      outline: none;
+    }
+
+    #user-input::placeholder {
+      color: var(--faint);
+    }
+
+    #user-input:focus {
+      border-color: rgba(99, 230, 190, 0.46);
+      box-shadow: 0 0 0 3px rgba(99, 230, 190, 0.12);
+    }
+
+    .btn {
+      min-height: 48px;
+      padding: 0.85rem 1rem;
+      border-radius: 16px;
+      border: 1px solid transparent;
+      font-weight: 700;
+      transition: all var(--transition);
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary-strong));
+      color: #062116;
+      box-shadow: 0 10px 24px rgba(55, 211, 154, 0.18);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.04);
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.03);
+      color: var(--muted);
+      border-color: var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.06);
+      color: var(--text);
+    }
+
+    .btn:disabled {
+      opacity: 0.7;
+      cursor: default;
+      transform: none;
+    }
+
+    .pantry-toolbar {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+
+    .toolbar-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-3);
+      flex-wrap: wrap;
+    }
+
+    .toolbar-count {
+      font-size: var(--text-xs);
+      color: var(--muted);
+      padding: 0.45rem 0.7rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-full);
+      background: rgba(255,255,255,0.03);
+    }
+
+    .pantry-actions {
+      display: flex;
+      gap: var(--space-2);
+      flex-wrap: wrap;
+    }
+
+    .pill-btn {
+      min-height: 44px;
+      padding: 0.75rem 0.95rem;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+      color: var(--muted);
+      font-size: var(--text-sm);
+      font-weight: 700;
+    }
+
+    .pill-btn:hover {
+      background: rgba(255,255,255,0.06);
+      color: var(--text);
+    }
+
+    .pill-btn.active {
+      background: var(--primary-soft);
+      border-color: rgba(99, 230, 190, 0.4);
+      color: #d8fff1;
+      box-shadow: inset 0 0 0 1px rgba(99, 230, 190, 0.08);
+    }
+
+    .utility-row {
+      display: flex;
+      gap: var(--space-2);
+      align-items: center;
+    }
+
+    #load-pantry-btn {
+      flex: 1;
+    }
+
+    #pantry-items {
+      min-height: 320px;
+      max-height: 500px;
+      overflow: auto;
+      border-radius: 18px;
+      background: rgba(5, 11, 20, 0.48);
+      border: 1px solid rgba(151, 177, 221, 0.12);
+      padding: var(--space-3);
+      display: none;
+    }
+
+    #pantry-items ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+
+    .pantry-item {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: var(--space-3);
+      align-items: center;
+      padding: 0.9rem;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(151, 177, 221, 0.12);
+    }
+
+    .item-main {
+      min-width: 0;
+    }
+
+    .item-name-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.45rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .item-name {
+      font-weight: 700;
+      font-size: var(--text-base);
+      color: var(--text);
+    }
+
+    .item-category {
+      font-size: var(--text-xs);
+      color: var(--muted);
+      padding: 0.25rem 0.55rem;
+      border-radius: var(--radius-full);
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(151, 177, 221, 0.1);
+    }
+
+    .item-meta {
+      font-size: var(--text-sm);
+      color: var(--muted);
+    }
+
+    .item-right {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .qty-chip,
+    .status-chip {
+      font-size: var(--text-xs);
+      padding: 0.38rem 0.7rem;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    .qty-chip {
+      color: var(--text);
+      background: rgba(255,255,255,0.05);
+    }
+
+    .status-chip {
+      color: var(--muted);
+      background: rgba(255,255,255,0.03);
+    }
+
+    .status-chip.risk,
+    .status-chip.expired {
+      border-color: rgba(255, 140, 140, 0.36);
+      color: #ffd7d7;
+      background: var(--danger-soft);
+    }
+
+    .empty-state {
+      min-height: 240px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+      gap: var(--space-2);
+      padding: var(--space-5);
+      border-radius: 16px;
+      background: rgba(255,255,255,0.025);
+      border: 1px dashed rgba(151, 177, 221, 0.18);
+    }
+
+    .empty-state h3 {
+      font-size: var(--text-base);
+      font-weight: 700;
+    }
+
+    .empty-state p {
+      color: var(--muted);
+      font-size: var(--text-sm);
+      max-width: 32ch;
+    }
+
+    .error-text {
+      color: var(--danger);
+      font-size: var(--text-sm);
+      display: none;
+    }
+
+    .skeleton-list {
+      display: grid;
+      gap: var(--space-2);
+    }
+
+    .skeleton-card {
+      height: 74px;
+      border-radius: 16px;
+      background: linear-gradient(
+        90deg,
+        rgba(255,255,255,0.03) 25%,
+        rgba(255,255,255,0.07) 50%,
+        rgba(255,255,255,0.03) 75%
+      );
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+      border: 1px solid rgba(151, 177, 221, 0.08);
+    }
+
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    @media (max-width: 920px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      #chat-box {
+        min-height: 320px;
+      }
+
+      #pantry-items {
+        min-height: 240px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding: var(--space-3);
+      }
+
+      .topbar {
+        padding: var(--space-4);
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .layout {
+        padding: var(--space-3);
+      }
+
+      .panel-inner {
+        padding: var(--space-4);
+      }
+
+      .chat-input-row {
+        flex-direction: column;
+      }
+
+      .chat-input-row .btn,
+      #user-input {
+        width: 100%;
+      }
+
+      .toolbar-top,
+      .utility-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .item-right {
+        justify-content: flex-start;
+      }
+
+      .pantry-item {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">SP</div>
+        <div class="brand-copy">
+          <h1>Smart Pantry Chef</h1>
+          <p>AI pantry assistant for recipes, ingredient tracking, and zero-waste cooking.</p>
+        </div>
+      </div>
+
+      <div class="status-badge">
+        <span class="status-dot"></span>
+        Session active
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="panel">
+        <div class="panel-inner">
+          <div class="panel-head">
+            <div>
+              <div class="eyebrow">Assistant</div>
+              <div class="panel-title">Chat with your pantry agent</div>
+              <div class="panel-subtitle">Ask for recipes, inventory updates, or items expiring soon.</div>
+            </div>
+            <div class="counter">Live chat</div>
+          </div>
+
+          <div id="chat-box">
+            <div class="message assistant">
+              <div class="message-avatar">C</div>
+              <div class="message-body">
+                <div class="message-label">Chef</div>
+                <div class="bubble">Welcome to Smart Pantry Chef.
+
+Try:
+• What can I cook using ingredients expiring soon?
+• Add 2 cartons of milk expiring next week.
+• Show me a recipe using eggs and bread.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="chat-input-row">
+            <input
+              id="user-input"
+              type="text"
+              autocomplete="off"
+              placeholder="Ask the Smart Pantry Chef..."
+            />
+            <button id="send-btn" class="btn btn-primary" type="button">Send</button>
+          </div>
+        </div>
+      </section>
+
+      <aside class="panel">
+        <div class="panel-inner">
+          <div class="panel-head">
+            <div>
+              <div class="eyebrow">Pantry</div>
+              <div class="panel-title">Pantry intelligence</div>
+              <div class="panel-subtitle">Switch between all items and expiring-soon views to inspect pantry status quickly.</div>
+            </div>
+            <div class="counter" id="pantry-count-badge">Not loaded</div>
+          </div>
+
+          <div class="pantry-toolbar">
+            <div class="toolbar-top">
+              <div class="pantry-actions">
+                <button class="pill-btn active" id="filter-all" type="button">View all items</button>
+                <button class="pill-btn" id="filter-risk" type="button">Check expiring soon</button>
+              </div>
+
+              <div class="toolbar-count" id="pantry-mode-label">Mode: all items</div>
+            </div>
+
+            <div class="utility-row">
+              <button class="btn btn-secondary" id="load-pantry-btn" type="button">Load pantry</button>
+              <button class="btn btn-secondary" id="refresh-pantry-btn" type="button">Refresh</button>
+            </div>
+          </div>
+
+          <div id="pantry-items"></div>
+          <div id="pantry-error" class="error-text"></div>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <script>
+    const chatBox = document.getElementById("chat-box");
+    const userInput = document.getElementById("user-input");
+    const sendBtn = document.getElementById("send-btn");
+
+    const pantryContainer = document.getElementById("pantry-items");
+    const pantryError = document.getElementById("pantry-error");
+    const pantryCountBadge = document.getElementById("pantry-count-badge");
+    const pantryModeLabel = document.getElementById("pantry-mode-label");
+
+    const loadPantryBtn = document.getElementById("load-pantry-btn");
+    const refreshPantryBtn = document.getElementById("refresh-pantry-btn");
+
+    const filterAllBtn = document.getElementById("filter-all");
+    const filterRiskBtn = document.getElementById("filter-risk");
+
+    let isSending = false;
+    let pendingAssistantMessage = null;
+
+    let pantryItemsCache = [];
+    let pantryLoaded = false;
+    let pantryMode = "all";
+
+    function appendMessage(label, text, type, options = {}) {
+      const msg = document.createElement("div");
+      msg.className = "message " + type + (options.pending ? " pending" : "");
+
+      const avatar = document.createElement("div");
+      avatar.className = "message-avatar";
+      avatar.textContent = type === "user" ? "Y" : "C";
+
+      const body = document.createElement("div");
+      body.className = "message-body";
+
+      const labelEl = document.createElement("div");
+      labelEl.className = "message-label";
+      labelEl.textContent = label;
+
+      const bubble = document.createElement("div");
+      bubble.className = "bubble";
+
+      if (options.pending) {
+        const textNode = document.createElement("span");
+        textNode.textContent = text;
+        bubble.appendChild(textNode);
+
+        const dots = document.createElement("span");
+        dots.className = "typing-dots";
+        dots.innerHTML = "<span></span><span></span><span></span>";
+        bubble.appendChild(dots);
+      } else {
+        bubble.textContent = text;
+      }
+
+      body.appendChild(labelEl);
+      body.appendChild(bubble);
+
+      msg.appendChild(avatar);
+      msg.appendChild(body);
+
+      chatBox.appendChild(msg);
+      chatBox.scrollTop = chatBox.scrollHeight;
+      return msg;
+    }
+
+    async function sendMessage() {
+      const text = userInput.value.trim();
+      if (!text || isSending) return;
+
+      appendMessage("You", text, "user");
+      userInput.value = "";
+      userInput.focus();
+
+      isSending = true;
+      sendBtn.disabled = true;
+      sendBtn.textContent = "Sending...";
+      pendingAssistantMessage = appendMessage("Chef", "Thinking", "assistant", { pending: true });
+
+      try {
+        const res = await fetch("/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: text }),
+        });
+
+        let replyText = "Sorry, I had trouble processing that request.";
+        if (res.ok) {
+          const data = await res.json();
+          replyText = data.reply || "(no reply)";
+        }
+
+        if (pendingAssistantMessage) {
+          const bubble = pendingAssistantMessage.querySelector(".bubble");
+          bubble.textContent = replyText;
+          pendingAssistantMessage.classList.remove("pending");
+        } else {
+          appendMessage("Chef", replyText, "assistant");
+        }
+      } catch (err) {
+        console.error(err);
+        const errorText = "Network error talking to the Smart Pantry server.";
+        if (pendingAssistantMessage) {
+          const bubble = pendingAssistantMessage.querySelector(".bubble");
+          bubble.textContent = errorText;
+          pendingAssistantMessage.classList.remove("pending");
+        }
+      } finally {
+        isSending = false;
+        pendingAssistantMessage = null;
+        sendBtn.disabled = false;
+        sendBtn.textContent = "Send";
+      }
+    }
+
+    function setActivePantryButton() {
+      [filterAllBtn, filterRiskBtn].forEach(btn => btn.classList.remove("active"));
+
+      if (pantryMode === "all") filterAllBtn.classList.add("active");
+      if (pantryMode === "risk") filterRiskBtn.classList.add("active");
+
+      pantryModeLabel.textContent =
+        pantryMode === "risk" ? "Mode: expiring soon" : "Mode: all items";
+    }
+
+    function setPantryCountBadge(total, shown) {
+      if (!pantryLoaded) {
+        pantryCountBadge.textContent = "Not loaded";
+        return;
+      }
+      pantryCountBadge.textContent = `${shown} shown · ${total} total`;
+    }
+
+    function getFilteredItems() {
+      let items = [...pantryItemsCache];
+
+      if (pantryMode === "risk") {
+        items = items.filter(
+          item => item.days_until_expiry !== null && item.days_until_expiry <= 3
+        );
+      }
+
+      return items;
+    }
+
+    function getEmptyStateContent() {
+      if (pantryMode === "risk") {
+        return {
+          title: "Nothing urgent right now",
+          text: "No pantry items are expiring in the next 3 days."
+        };
+      }
+
+      return {
+        title: "No pantry items yet",
+        text: "Load or add pantry items to start tracking ingredients here."
+      };
+    }
+
+    function renderPantryItems(items) {
+      pantryContainer.style.display = "block";
+
+      if (!items.length) {
+        const empty = getEmptyStateContent();
+        pantryContainer.innerHTML = `
+          <div class="empty-state">
+            <h3>${empty.title}</h3>
+            <p>${empty.text}</p>
+          </div>
+        `;
+        setPantryCountBadge(pantryItemsCache.length, 0);
+        return;
+      }
+
+      const list = document.createElement("ul");
+
+      items.forEach(item => {
+        const li = document.createElement("li");
+        li.className = "pantry-item";
+
+        const left = document.createElement("div");
+        left.className = "item-main";
+
+        const nameRow = document.createElement("div");
+        nameRow.className = "item-name-row";
+
+        const name = document.createElement("span");
+        name.className = "item-name";
+        name.textContent = item.name || "Unnamed item";
+
+        nameRow.appendChild(name);
+
+        if (item.category) {
+          const category = document.createElement("span");
+          category.className = "item-category";
+          category.textContent = item.category;
+          nameRow.appendChild(category);
+        }
+
+        const meta = document.createElement("div");
+        meta.className = "item-meta";
+        meta.textContent = item.expiry_date ? `Expiry: ${item.expiry_date}` : "Expiry: unknown";
+
+        left.appendChild(nameRow);
+        left.appendChild(meta);
+
+        const right = document.createElement("div");
+        right.className = "item-right";
+
+        const qty = document.createElement("span");
+        qty.className = "qty-chip";
+        qty.textContent = `${item.quantity} ${item.unit || ""}`.trim();
+        right.appendChild(qty);
+
+        if (item.days_until_expiry !== null) {
+          const status = document.createElement("span");
+          status.className = "status-chip";
+
+          if (item.days_until_expiry < 0) {
+            status.classList.add("expired");
+            status.textContent = "Expired";
+          } else if (item.days_until_expiry <= 3) {
+            status.classList.add("risk");
+            status.textContent = `Expiring in ${item.days_until_expiry} day${item.days_until_expiry === 1 ? "" : "s"}`;
+          } else {
+            status.textContent = `Exp in ${item.days_until_expiry} days`;
+          }
+
+          right.appendChild(status);
+        }
+
+        li.appendChild(left);
+        li.appendChild(right);
+        list.appendChild(li);
+      });
+
+      pantryContainer.innerHTML = "";
+      pantryContainer.appendChild(list);
+      setPantryCountBadge(pantryItemsCache.length, items.length);
+    }
+
+    function renderPantryLoading() {
+      pantryContainer.style.display = "block";
+      pantryContainer.innerHTML = `
+        <div class="skeleton-list">
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+        </div>
+      `;
+    }
+
+    function applyPantryMode() {
+      setActivePantryButton();
+
+      if (!pantryLoaded) {
+        pantryContainer.style.display = "block";
+        pantryContainer.innerHTML = `
+          <div class="empty-state">
+            <h3>Pantry not loaded</h3>
+            <p>Click Load pantry to fetch your latest items.</p>
+          </div>
+        `;
+        setPantryCountBadge(0, 0);
+        return;
+      }
+
+      renderPantryItems(getFilteredItems());
+    }
+
+    async function loadPantryItems() {
+      pantryError.style.display = "none";
+      pantryError.textContent = "";
+
+      loadPantryBtn.disabled = true;
+      refreshPantryBtn.disabled = true;
+
+      renderPantryLoading();
+
+      try {
+        const res = await fetch("/pantry");
+        if (!res.ok) throw new Error("Failed to fetch pantry");
+
+        const data = await res.json();
+        pantryItemsCache = Array.isArray(data.items) ? data.items : [];
+        pantryLoaded = true;
+
+        applyPantryMode();
+      } catch (err) {
+        console.error(err);
+        pantryContainer.style.display = "none";
+        pantryError.style.display = "block";
+        pantryError.textContent = "Could not load pantry items.";
+      } finally {
+        loadPantryBtn.disabled = false;
+        refreshPantryBtn.disabled = false;
+      }
+    }
+
+    function setPantryMode(mode) {
+      pantryMode = mode;
+      applyPantryMode();
+    }
+
+    userInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    sendBtn.addEventListener("click", sendMessage);
+
+    filterAllBtn.addEventListener("click", () => setPantryMode("all"));
+    filterRiskBtn.addEventListener("click", () => setPantryMode("risk"));
+
+    loadPantryBtn.addEventListener("click", loadPantryItems);
+    refreshPantryBtn.addEventListener("click", loadPantryItems);
+
+    setActivePantryButton();
+    applyPantryMode();
+  </script>
+</body>
+</html>

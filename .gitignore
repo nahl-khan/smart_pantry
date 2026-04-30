@@ -1,0 +1,5 @@
+notebooks/.env
+notebooks/__pycache__/
+Archives/chat_cli.py
+.env
+__pycache__/

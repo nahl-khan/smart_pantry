@@ -1,120 +1,280 @@
-# Smart Pantry Chef — Agentic AI for Zero-Waste Cooking
+# 🥬 Smart Pantry Chef
 
-## Project Overview
-An LLM agent that tracks your pantry, reasons about expiration dates,
-and suggests recipes that prioritize at-risk ingredients — preventing
-food waste through real-time database integration and prompt engineering.
+> **The AI agent that looks inside your fridge, spots what's about to expire, and tells you exactly what to cook — before it's too late.**
+
+Smart Pantry Chef is a zero-waste kitchen AI agent powered by GPT-4o mini. It maintains a live inventory of your pantry, identifies ingredients at risk of expiring, suggests grounded recipes using only what you actually have, and updates your inventory after cooking all through a natural language chat interface.
+
+
+## 🧠 How It Works
+
+Smart Pantry Chef uses the **Tool Use agentic pattern**. Rather than relying on the model's general knowledge (which would hallucinate ingredients), the agent is given structured access to your live MySQL database through five Python tool functions.
+
+```
+User Message
+     ↓
+LLM Decides which tool to call
+     ↓
+Tool executes against MySQL database
+     ↓
+LLM receives result and reasons over it
+     ↓
+Loop repeats until no more tool calls needed
+     ↓
+Final grounded response delivered
+```
+
+The loop is genuinely agentic — the model autonomously decides the sequence of tool calls. A typical recipe suggestion turn involves 2–3 tool calls before the final response is produced.
 
 ---
 
-## Project Structure
+## ✨ Features
+
+- **Zero-hallucination recipes** — every ingredient is verified against the live database before being suggested
+- **Expiry-first prioritisation** — the agent always checks what is about to expire before making any recommendation
+- **Live pantry dashboard** — scrollable table showing all items with real-time days-remaining status
+- **Natural language chat** — ask anything in plain English; the agent handles tool orchestration invisibly
+- **Quick-action shortcuts** — one-click buttons for Recipe Ideas, Expiring Soon, Zero-waste Meal, Clear Expired
+- **Receipt / label OCR scanning** — photograph a grocery receipt and have all items automatically added to your pantry with estimated expiry dates
+- **Inventory management** — add, remove, and update quantities through conversation
+
+---
+
+## 🗂️ Project Structure
 
 ```
-smart_pantry/
+smart-pantry-chef/
+│
+├── app.py                        # Flask web application (main entry point)
+├── sql_openai_config.py          # Database and API key configuration
+│
 ├── notebooks/
-│   ├── 01_database_setup.ipynb      ← Run FIRST: creates DB, loads 50 items
-│   ├── 02_tools.ipynb               ← Tool functions + OpenAI tool schemas
-│   ├── 03_prompt_engineering.ipynb  ← 5 prompt versions + experiments
-│   ├── 04_agent_loop.ipynb          ← Full agentic loop + test turns
-│   ├── 05_evaluation.ipynb          ← Metrics + comparison table
-│   └── 06_interactive_chat.ipynb    ← Live chat interface (run last)
-│   └── sql_openai_config.py         ← Returns the SQL Config and OpenAI API key
-
-├── data/
-│   ├── pantry_items.json            ← 50 pantry items (source of truth)
-│   ├── pantry.db                    ← SQLite database (auto-created)
-│   └── experiment_results.json      ← Saved after running notebook 05
-└── requirements.txt
+│   ├── 01_database_setup.ipynb   # MySQL schema creation and data seeding
+│   ├── 02_tools.ipynb            # Tool functions + OpenAI function schemas
+│   ├── 03_prompt_engineering.ipynb # 5-version prompt iteration log (V1→V5)
+│   ├── 04_agent_loop.ipynb       # Agentic loop implementation and demo
+│   ├── 05_evaluation.ipynb       # LLM-as-judge evaluation across all prompt versions
+│   └── 06_interactive_chat.ipynb # Live chat demo in Jupyter
+│
+└── templates/
+    └── index.html                # Chat UI frontend
 ```
 
 ---
 
-## Setup Instructions (VS Code)
+## 🛠️ Tech Stack
 
-### Step 1: Install Python dependencies
-Open a terminal in VS Code (Ctrl+`) and run:
+| Layer | Technology |
+|---|---|
+| AI Model | GPT-4o mini (OpenAI) |
+| Agentic Pattern | Tool Use / Function Calling |
+| Backend | Flask (Python) |
+| Database | MySQL |
+| OCR | EasyOCR |
+| Image handling | Pillow (PIL) |
+| Frontend | HTML / CSS / JavaScript |
+
+---
+
+## ⚙️ Prerequisites
+
+- Python 3.11+
+- MySQL 8.0+
+- An OpenAI API key
+
+---
+
+## 🚀 Getting Started
+
+### 1. Clone the repository
+
 ```bash
-pip install -r requirements.txt
+git clone https://github.com/your-username/smart-pantry-chef.git
+cd smart-pantry-chef
 ```
 
-### Step 2: Set your OpenAI API key
-**Option A — Environment variable (recommended):**
-```bash
-# Mac/Linux
-export OPENAI_API_KEY=sk-your-key-here
+### 2. Install Python dependencies
 
-# Windows (PowerShell)
-$env:OPENAI_API_KEY = "sk-your-key-here"
+```bash
+pip install flask openai mysql-connector-python pillow easyocr pandas matplotlib
 ```
 
-**Option B — Inline in any notebook:**
-Uncomment and edit this line at the top of any notebook:
+### 3. Set up the database
+
+Log into MySQL and run the following to create the database and user:
+
+```sql
+CREATE DATABASE smart_pantry;
+CREATE USER 'pantry_user'@'localhost' IDENTIFIED BY 'your_password';
+GRANT ALL PRIVILEGES ON smart_pantry.* TO 'pantry_user'@'localhost';
+FLUSH PRIVILEGES;
+```
+
+Then create the pantry table:
+
+```sql
+USE smart_pantry;
+
+CREATE TABLE pantry (
+    id          INT AUTO_INCREMENT PRIMARY KEY,
+    name        VARCHAR(100)   NOT NULL,
+    category    VARCHAR(50)    NOT NULL,
+    quantity    DECIMAL(10,2)  NOT NULL,
+    unit        VARCHAR(30)    NOT NULL,
+    expiry_date DATE,
+    added_date  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+### 4. Configure credentials
+
+Open `sql_openai_config.py` and update your credentials:
+
 ```python
-os.environ['OPENAI_API_KEY'] = 'sk-your-key-here'
+def get_mysql_config():
+    return {
+        "host":     "localhost",
+        "port":     3306,
+        "user":     "pantry_user",
+        "password": "your_password",
+        "database": "smart_pantry",
+    }
+
+def get_openai():
+    return "sk-your-openai-api-key"
 ```
 
-### Step 3: Select Python kernel in VS Code
-- Open any `.ipynb` file
-- Click "Select Kernel" (top right) → choose your Python environment
+### 5. Start the Flask app
 
-### Step 4: Run notebooks in order
+```bash
+python app.py
 ```
-01 → 02 → 03 → 04 → 05 → 06
-```
-Notebooks 02–06 are self-contained but the database must exist first (notebook 01).
+
+Open your browser at `http://localhost:5001`
 
 ---
 
-## Notebook Guide
+## 🔌 API Endpoints
 
-| Notebook | Purpose | Key concepts |
+### `GET /`
+Serves the chat UI.
+
+---
+
+### `POST /chat`
+
+Send a natural language message to the Smart Pantry Chef agent.
+
+**Request:**
+```json
+{ "message": "What should I cook tonight to avoid wasting anything?" }
+```
+
+**Response:**
+```json
+{
+  "reply": "**Recipe:** Spinach & Chicken Stir-fry\n**Why this recipe?** Spinach expires in 1 day..."
+}
+```
+
+---
+
+### `GET /pantry`
+
+Returns the live pantry inventory directly from MySQL — no AI layer involved.
+
+**Response:**
+```json
+{
+  "items": [
+    {
+      "name": "spinach",
+      "category": "vegetable",
+      "quantity": 100.0,
+      "unit": "grams",
+      "expiry_date": "2026-04-28",
+      "days_until_expiry": 1
+    }
+  ]
+}
+```
+
+---
+
+### `POST /ocr`
+
+Upload an image of a grocery receipt or food label. Items are automatically extracted and added to the pantry.
+
+**Request:** `multipart/form-data` with field `image` (JPEG, PNG, or WEBP)
+
+**Response:**
+```json
+{
+  "ocr_raw": [
+    { "text": "Organic Spinach 200g", "confidence": 0.94 }
+  ],
+  "reply": "✅ Added 2 items:\n• 200 grams of Spinach → Produce · expires 2026-05-02 (estimated)"
+}
+```
+
+---
+
+## 🤖 The Five Agent Tools
+
+| Tool | Description |
+|---|---|
+| `get_pantry_items()` | Returns full inventory sorted by expiry date with days-remaining computed |
+| `get_at_risk_items(threshold_days)` | Filters to items expiring within N days; flags expired items separately |
+| `add_pantry_item(name, category, quantity, unit, expiry_date)` | Inserts a new item with validation |
+| `remove_pantry_item(name)` | Deletes by partial name match; handles brand-prefixed names |
+| `update_quantity(name, new_quantity)` | Updates remaining quantity; auto-removes if quantity reaches 0 |
+
+---
+
+## 📓 Notebook Guide
+
+Run the notebooks in order for a full walkthrough:
+
+| Notebook | What to do |
+|---|---|
+| `01_database_setup.ipynb` | Run all cells to create the schema |
+| `02_tools.ipynb` | Explore each tool function individually and test database connections |
+| `03_prompt_engineering.ipynb` | Read the 5-version prompt iteration log; shows each failure and fix |
+| `04_agent_loop.ipynb` | Run the full 4-turn demo conversation to see the agent in action |
+| `05_evaluation.ipynb` | Run all cells to execute 15 evaluation turns and generate result charts |
+| `06_interactive_chat.ipynb` | Live chat interface — type your own questions directly in Jupyter |
+
+---
+
+## 🔒 Prompt Engineering Summary
+
+The production system prompt was developed across 5 iterations:
+
+| Version | Technique Added | Problem It Solved |
 |---|---|---|
-| 01 | Database setup | SQLite, JSON loading, schema design |
-| 02 | Tool functions | Function calling, tool schemas, dispatcher |
-| 03 | Prompt engineering | 5 prompt iterations, A/B comparison |
-| 04 | Agent loop | Think → call tool → observe → think loop |
-| 05 | Evaluation | Metrics: hallucination, grounding, structure |
-| 06 | Interactive chat | Live conversation with full tool transparency |
+| V1 | Nothing | Baseline — hallucinations frequent |
+| V2 | Persona assignment | Generic, unfocused responses |
+| V3 | Anti-hallucination grounding rule | Model invented ingredients not in pantry |
+| V4 | Chain-of-thought (5-step sequence) | Inconsistent expiry prioritisation |
+| V5 | Structured output template | Unpredictable response format |
 
 ---
 
-## Sample Conversations to Try (Notebook 06)
+## ⚠️ Safety Notes
 
-```
-"What should I cook tonight to avoid wasting anything?"
-"Suggest a breakfast using items expiring soon."
-"I just bought 300g of ground turkey expiring 2025-03-28. Add it."
-"What's in my pantry right now?"
-"I made the recipe — I used all the spinach and 1 piece of chicken."
-"Can you suggest an Asian-inspired dish with what's about to expire?"
-"Remove the bread — it went moldy."
-```
+**Food safety** — The agent does not distinguish between best-before dates (quality guideline) and use-by dates (safety limit). Do not rely on the agent's suggestions for use-by expired items.
+
+**Allergen awareness** — The agent has no knowledge of dietary restrictions or allergies. It will suggest recipes containing any pantry ingredient regardless of personal health requirements.
+
 
 ---
 
-## Why This Project Needs Prompt Engineering + Function Calling
+## 🗺️ Future Roadmap
 
-A standalone LLM cannot do this task because:
-1. **No real-time inventory** — it hallucinates ingredients
-2. **No expiry awareness** — it cannot reason about today's date vs. expiration
-3. **No state updates** — it cannot modify the pantry after cooking
-
-Prompt engineering is needed because:
-1. RAG grounds the data but unfocused prompts still produce vague output
-2. Chain-of-thought forces step-by-step expiry reasoning
-3. Structured output format makes responses consistent and auditable
-4. Persona + tone guides the model toward practical, encouraging responses
+- **Meal planning mode** — plan the week's meals around expiry schedules
+- **Multi-agent architecture** — separate Planner, Shopper, and Chef agents
+- **Supermarket API integration** — auto-generate shopping lists for pantry gaps
 
 ---
 
-## Resetting the Pantry
 
-To reload all 50 original items and start fresh, run this in any notebook:
-```python
-conn = get_connection()
-conn.execute('DELETE FROM pantry')
-conn.commit()
-conn.close()
-load_from_json(JSON_PATH)
-```
-Or use the `reset_and_reload()` function in notebook 01.
+﻿# smart_pantry

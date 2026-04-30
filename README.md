@@ -2,8 +2,9 @@
 
 > **The AI agent that looks inside your fridge, spots what's about to expire, and tells you exactly what to cook — before it's too late.**
 
-Smart Pantry Chef is a zero-waste kitchen AI agent powered by GPT-4o mini. It maintains a live inventory of your pantry, identifies ingredients at risk of expiring, suggests grounded recipes using only what you actually have, and updates your inventory after cooking all through a natural language chat interface.
+Smart Pantry Chef is a zero-waste kitchen AI agent powered by GPT-4o mini. It maintains a live inventory of your pantry, identifies ingredients at risk of expiring, suggests grounded recipes using only what you actually have, and updates your inventory after cooking — all through a natural language chat interface.
 
+---
 
 ## 🧠 How It Works
 
@@ -42,21 +43,27 @@ The loop is genuinely agentic — the model autonomously decides the sequence of
 ## 🗂️ Project Structure
 
 ```
-smart-pantry-chef/
+smart_pantry/
 │
-├── app.py                        # Flask web application (main entry point)
-├── sql_openai_config.py          # Database and API key configuration
+├── app.py                             # Flask web application (main entry point)
+├── .env                               # Environment variables (not committed to git)
+├── .env.example                       # Template showing required variables
+├── .gitignore
 │
 ├── notebooks/
-│   ├── 01_database_setup.ipynb   # MySQL schema creation and data seeding
-│   ├── 02_tools.ipynb            # Tool functions + OpenAI function schemas
-│   ├── 03_prompt_engineering.ipynb # 5-version prompt iteration log (V1→V5)
-│   ├── 04_agent_loop.ipynb       # Agentic loop implementation and demo
-│   ├── 05_evaluation.ipynb       # LLM-as-judge evaluation across all prompt versions
-│   └── 06_interactive_chat.ipynb # Live chat demo in Jupyter
+│   ├── sql_openai_config.py           # Database and API key configuration
+│   ├── 01_database_setup.ipynb        # MySQL schema creation and data seeding
+│   ├── 02_tools.ipynb                 # Tool functions + OpenAI function schemas
+│   ├── 03_prompt_engineering.ipynb    # 5-version prompt iteration log (V1→V5)
+│   ├── 04_agent_loop.ipynb            # Agentic loop implementation and demo
+│   ├── 05_evaluation.ipynb            # LLM-as-judge evaluation across all prompt versions
+│   └── 06_interactive_chat.ipynb      # Live chat demo in Jupyter
+│
+├── model/
+│   └── craft_mlt_25k.pth              # CRAFT OCR model weights (tracked via Git LFS)
 │
 └── templates/
-    └── index.html                # Chat UI frontend
+    └── index.html                     # Chat UI frontend
 ```
 
 ---
@@ -69,7 +76,7 @@ smart-pantry-chef/
 | Agentic Pattern | Tool Use / Function Calling |
 | Backend | Flask (Python) |
 | Database | MySQL |
-| OCR | EasyOCR |
+| OCR | EasyOCR + CRAFT |
 | Image handling | Pillow (PIL) |
 | Frontend | HTML / CSS / JavaScript |
 
@@ -80,6 +87,7 @@ smart-pantry-chef/
 - Python 3.11+
 - MySQL 8.0+
 - An OpenAI API key
+- Git LFS (for the OCR model weights)
 
 ---
 
@@ -88,19 +96,25 @@ smart-pantry-chef/
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/your-username/smart-pantry-chef.git
-cd smart-pantry-chef
+git clone https://github.com/nahl-khan/smart_pantry.git
+cd smart_pantry
 ```
 
-### 2. Install Python dependencies
+### 2. Pull the model file (Git LFS)
 
 ```bash
-pip install flask openai mysql-connector-python pillow easyocr pandas matplotlib
+git lfs pull
 ```
 
-### 3. Set up the database
+### 3. Install Python dependencies
 
-Log into MySQL and run the following to create the database and user:
+```bash
+pip install flask openai mysql-connector-python pillow easyocr pandas matplotlib python-dotenv
+```
+
+### 4. Set up the database
+
+Log into MySQL and run:
 
 ```sql
 CREATE DATABASE smart_pantry;
@@ -125,25 +139,28 @@ CREATE TABLE pantry (
 );
 ```
 
-### 4. Configure credentials
+### 5. Configure credentials
 
-Open `sql_openai_config.py` and update your credentials:
+Copy the example env file and fill in your values:
 
-```python
-def get_mysql_config():
-    return {
-        "host":     "localhost",
-        "port":     3306,
-        "user":     "pantry_user",
-        "password": "your_password",
-        "database": "smart_pantry",
-    }
-
-def get_openai():
-    return "sk-your-openai-api-key"
+```bash
+cp .env.example .env
 ```
 
-### 5. Start the Flask app
+Edit `.env`:
+
+```
+OPENAI_API_KEY=sk-your-openai-api-key
+MYSQL_HOST=localhost
+MYSQL_PORT=3306
+MYSQL_USER=pantry_user
+MYSQL_PASSWORD=your_password
+MYSQL_DB=smart_pantry
+```
+
+> ⚠️ Never commit `.env` to git. It is listed in `.gitignore`.
+
+### 6. Start the Flask app
 
 ```bash
 python app.py
@@ -247,8 +264,6 @@ Run the notebooks in order for a full walkthrough:
 
 ## 🔒 Prompt Engineering Summary
 
-The production system prompt was developed across 5 iterations:
-
 | Version | Technique Added | Problem It Solved |
 |---|---|---|
 | V1 | Nothing | Baseline — hallucinations frequent |
@@ -265,7 +280,6 @@ The production system prompt was developed across 5 iterations:
 
 **Allergen awareness** — The agent has no knowledge of dietary restrictions or allergies. It will suggest recipes containing any pantry ingredient regardless of personal health requirements.
 
-
 ---
 
 ## 🗺️ Future Roadmap
@@ -273,8 +287,3 @@ The production system prompt was developed across 5 iterations:
 - **Meal planning mode** — plan the week's meals around expiry schedules
 - **Multi-agent architecture** — separate Planner, Shopper, and Chef agents
 - **Supermarket API integration** — auto-generate shopping lists for pantry gaps
-
----
-
-
-﻿# smart_pantry

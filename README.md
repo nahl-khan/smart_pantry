@@ -118,9 +118,3 @@ conn.close()
 load_from_json(JSON_PATH)
 ```
 Or use the `reset_and_reload()` function in notebook 01.
-# smart_pantry
-# smart_pantry
-# smart_pantry
-# smart_pantry
-# smart_pantry
-# smart_pantry
